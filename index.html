@@ -2002,36 +2002,62 @@
 
   <script>
     // =========================================================================
-    // 14 SMARTLINK ADSTERRA ROTATOR ENGINE (ROUND-ROBIN & HIGH CONVERSION)
+    // PROFESSIONAL POPUNDER & SOCIAL BAR MANAGER (ANTI-BOUNCE & FREQUENCY CAP)
     // =========================================================================
-    const ADSTERRA_SMARTLINKS = [
-      "https://arwf.org/4/b3d142948525e2a1ce84eefc6a4f6405",
-      "https://araplhn.org/4/bf006da678f82dd5d669440fc70b7456",
-      "https://auctionr.org/4/6e8f347e0cc4ec2d9a3a34cd4ef592b2",
-      "https://auctionr.org/4/5f55cbe9b9b71bdb79082e6ca847f49d",
-      "https://asiafilm.org/4/3b3f86fcc62496af285392084c3bd6e0",
-      "https://asiafilm.org/4/814cdf17852dfd98d0ce32ee03d49ea4",
-      "https://auctionr.org/4/d05f642e6632a3c4ca6350d67fd88f24",
-      "https://ardance.org/4/254f543d74fc1af76db84b832baf4762",
-      "https://auctionr.org/4/c332ed13aaea72799a6999fc9a87deb4",
-      "https://asiafilm.org/4/077a29f7e09eb93e2e7886106e1a22bb",
-      "https://asiafilm.org/4/e703f116678df65b5e2c7fbee34143e0",
-      "https://asiafilm.org/4/583b05dbf1e11722a31d759f173d666e",
-      "https://asiafilm.org/4/f74c4025812e7487d563eba1c360d98d",
-      "https://asiafilm.org/4/e31d506307bbc7598c4e6abe37a7a203"
-    ];
+    const POPUNDER_SCRIPT_SRC = "https://accountut.com/1/75653e5a4f8545e64e2b93a7fca7fea8";
+    const SOCIALBAR_SCRIPT_SRC = "https://bellnewyork.org/14/c19a4beeb70f02ff15ef11086ce3dc29";
+    const POPUNDER_COOLDOWN_MS = 30 * 60 * 1000; // Frekuensi profesional: 1x setiap 30 menit per pengunjung
+
+    let socialBarLoaded = false;
+    let popunderLoaded = false;
+
+    function loadSocialBarAd() {
+      if (socialBarLoaded) return;
+      socialBarLoaded = true;
+      const s = document.createElement('script');
+      s.setAttribute('data-cfasync', 'false');
+      s.src = SOCIALBAR_SCRIPT_SRC;
+      s.async = true;
+      document.body.appendChild(s);
+    }
+
+    function loadPopunderAdWithCap() {
+      if (popunderLoaded) return;
+      const now = Date.now();
+      const lastPop = parseInt(localStorage.getItem('tanciro_popunder_ts') || '0', 10);
+
+      // Hanya muat jika sudah melewati jeda 30 menit agar pengunjung tidak kabur
+      if (now - lastPop < POPUNDER_COOLDOWN_MS) return;
+
+      popunderLoaded = true;
+      localStorage.setItem('tanciro_popunder_ts', now.toString());
+
+      const p = document.createElement('script');
+      p.setAttribute('data-cfasync', 'false');
+      p.src = POPUNDER_SCRIPT_SRC;
+      p.async = true;
+      document.body.appendChild(p);
+    }
+
+    function initProfessionalAdUnits() {
+      // 1. Muat Social Bar setelah 4 detik agar tidak bertabrakan dengan tampilan awal
+      setTimeout(loadSocialBarAd, 4000);
+
+      // 2. Aktifkan Popunder hanya setelah pengunjung betah melihat-lihat (12 detik) atau scroll layar
+      setTimeout(loadPopunderAdWithCap, 12000);
+    }
+
+    // =========================================================================
+    // SINGLE SMARTLINK ADSTERRA ENGINE (HIGH CONVERSION PRE-LANDING)
+    // =========================================================================
+    const ADSTERRA_SMARTLINK = "https://arwf.org/4/b3d142948525e2a1ce84eefc6a4f6405";
 
     function getNextSmartlink() {
-      let idx = parseInt(localStorage.getItem('tanciro_sl_idx') || '0', 10);
-      if (isNaN(idx) || idx < 0 || idx >= ADSTERRA_SMARTLINKS.length) idx = 0;
-      const url = ADSTERRA_SMARTLINKS[idx];
-      localStorage.setItem('tanciro_sl_idx', ((idx + 1) % ADSTERRA_SMARTLINKS.length).toString());
-      return url;
+      return ADSTERRA_SMARTLINK;
     }
 
     function openRotatedSmartlink() {
-      const slUrl = getNextSmartlink();
-      window.open(slUrl, '_blank', 'noopener');
+      window.open(ADSTERRA_SMARTLINK, '_blank', 'noopener');
     }
 
     // STATE UNTUK HALAMAN PRA-LANDING
@@ -2069,7 +2095,7 @@
     }
 
     function triggerStep1Smartlink() {
-      // Buka Smartlink Adsterra dari Rotator 14 Link
+      // Buka Smartlink Utama Adsterra
       openRotatedSmartlink();
 
       const btn1 = document.getElementById('preBtnStep1');
@@ -3429,6 +3455,9 @@
       if (hiddenDate === today) {
         document.getElementById('welcomeModal').style.display = 'none';
       }
+
+      // Inisialisasi Popunder Berfrekuensi Profesional & Social Bar
+      initProfessionalAdUnits();
     }
 
     // 1. Ambil langsung dari Google Play Store (mendukung Package ID langsung & pencarian Google Play otomatis)
@@ -3738,6 +3767,9 @@
       if (!item) return;
       currentSelectedItem = item;
 
+      // Aktifkan Popunder (dengan batas frekuensi 30 menit) saat pengunjung membuka halaman detail game
+      loadPopunderAdWithCap();
+
       document.getElementById('mainView').style.display = 'none';
       document.getElementById('detailView').style.display = 'block';
       document.getElementById('navMenuBtn').textContent = '‹';
@@ -3966,6 +3998,8 @@
         localStorage.setItem('hideWelcomeDate', new Date().toDateString());
       }
       document.getElementById('welcomeModal').style.display = 'none';
+      // Muat Social Bar dengan mulus setelah pop-up sambutan ditutup
+      loadSocialBarAd();
     }
 
     function openWelcomeModal() {
